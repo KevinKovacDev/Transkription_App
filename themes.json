@@ -1,0 +1,34 @@
+{
+    "discord_dark": {
+        "name": "Discord Dark",
+        "bg":            "#313338",
+        "bg_secondary":  "#2b2d31",
+        "bg_tertiary":   "#1e1f22",
+        "bg_elevated":   "#383a40",
+        "text":          "#f2f3f5",
+        "text_muted":    "#b5bac1",
+        "text_disabled": "#80848e",
+        "accent":        "#5865f2",
+        "success":       "#23a559",
+        "danger":        "#f23f43",
+        "separator":     "#3f4147",
+        "btn_bg":        "#4e5058",
+        "btn_active_bg": "#6d6f78"
+    },
+    "cosimo": {
+        "name": "Cosimo",
+        "bg":            "#1f0015",
+        "bg_secondary":  "#2d001f",
+        "bg_tertiary":   "#150010",
+        "bg_elevated":   "#3d0030",
+        "text":          "#ffe6f5",
+        "text_muted":    "#d47bb5",
+        "text_disabled": "#7a3560",
+        "accent":        "#ff1493",
+        "success":       "#ff69b4",
+        "danger":        "#ff4466",
+        "separator":     "#5c0040",
+        "btn_bg":        "#7d0055",
+        "btn_active_bg": "#c2006a"
+    }
+}

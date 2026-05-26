@@ -1,0 +1,12 @@
+[project]
+name = "transkript"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "faster-whisper>=1.2.1",
+    "nvidia-cublas-cu12>=12.9.2.10",
+    "nvidia-cudnn-cu12>=9.22.0.52",
+    "yt-dlp>=2026.3.17",
+]
