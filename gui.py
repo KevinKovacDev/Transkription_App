@@ -932,6 +932,7 @@ class SettingsWindow(tk.Toplevel):
         self._scale_var = tk.StringVar(value=cfg.get("ui_scale", "medium"))
         self._model_var = tk.StringVar(value=cfg.get("model", "large-v3"))
         self._theme_var = tk.StringVar(value=cfg.get("theme", "discord_dark"))
+        self._folder_var = tk.StringVar(value=cfg.get("default_folder", str(Path(__file__).parent)))
 
         outer = tk.Frame(self, bg=Theme["bg"], padx=32, pady=28)
         outer.pack()
@@ -962,6 +963,20 @@ class SettingsWindow(tk.Toplevel):
         for value, label in config.list_themes():
             tk.Radiobutton(outer, text=label, variable=self._theme_var, value=value, **rb).pack(anchor="w", pady=2)
 
+        tk.Frame(outer, height=1, bg=Theme["separator"]).pack(fill="x", pady=(16, 16))
+
+        tk.Label(outer, text="Standardordner", font=("", 13, "bold"),
+                 bg=Theme["bg"], fg=Theme["text"]).pack(anchor="w", pady=(0, 8))
+        tk.Label(outer, text="Startordner beim Öffnen des Datei-Dialogs.",
+                 font=("", 11), bg=Theme["bg"], fg=Theme["text_muted"]).pack(anchor="w", pady=(0, 8))
+        folder_row = tk.Frame(outer, bg=Theme["bg"])
+        folder_row.pack(fill="x")
+        tk.Entry(folder_row, textvariable=self._folder_var, font=("", 11),
+                 bg=Theme["bg_elevated"], fg=Theme["text"], insertbackground=Theme["text"],
+                 relief="flat", width=34).pack(side="left", ipady=4)
+        RoundedButton(folder_row, text="...", command=self._pick_folder,
+                      font=("", 11), padx=8, pady=3, **_btn()).pack(side="left", padx=(8, 0))
+
         btn_frame = tk.Frame(outer, bg=Theme["bg"])
         btn_frame.pack(fill="x", pady=(20, 0))
         RoundedButton(btn_frame, text="Speichern", command=self._apply,
@@ -969,12 +984,21 @@ class SettingsWindow(tk.Toplevel):
         RoundedButton(btn_frame, text="Abbrechen", command=self.destroy,
                       font=("", 11), padx=10, pady=5, **_btn()).pack(side="left", padx=(10, 0))
 
+    def _pick_folder(self) -> None:
+        from tkinter import filedialog
+        current = self._folder_var.get()
+        initial = current if Path(current).exists() else str(Path(__file__).parent)
+        folder = filedialog.askdirectory(initialdir=initial)
+        if folder:
+            self._folder_var.set(folder)
+
     def _apply(self) -> None:
         model_changed = self._cfg.get("model") != self._model_var.get()
         theme_changed = self._cfg.get("theme", "discord_dark") != self._theme_var.get()
         self._cfg["ui_scale"] = self._scale_var.get()
         self._cfg["model"] = self._model_var.get()
         self._cfg["theme"] = self._theme_var.get()
+        self._cfg["default_folder"] = self._folder_var.get()
         config.save(self._cfg)
         self.destroy()
         self._on_save(model_changed, theme_changed)

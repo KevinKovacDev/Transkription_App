@@ -5,7 +5,7 @@ CONFIG_PATH  = Path(__file__).parent / "transcript_config.json"
 THEMES_PATH  = Path(__file__).parent / "themes.json"
 
 _DEFAULTS: dict = {
-    "default_folder": str(Path.home()),
+    "default_folder": str(Path(__file__).parent),
     "use_default_folder": False,
     "output_folder_yt": str(Path(__file__).parent / "output_yt"),
     "model": "large-v3",

@@ -1,5 +1,9 @@
 # Transkript
 
+> [!WARNING]
+> **`transcript_config.json` nicht weitergeben!**
+> Diese Datei enthält persönliche Pfade (z. B. `C:/Users/deinName/...`) und wird von der App automatisch angelegt. Jeder muss sie für sich selbst einrichten — nicht ins Git einchecken und nicht an andere weitergeben.
+
 ## Installation
 
 ### 1. uv installieren

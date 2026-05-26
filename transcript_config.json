@@ -1,8 +1,8 @@
 {
-    "default_folder": "C:/Users/kevin",
+    "default_folder": "C:/Users/kevin/Videos",
     "use_default_folder": false,
     "output_folder_yt": "C:\\Users\\kevin\\Desktop\\Transkript\\output_yt",
     "model": "large-v3",
     "ui_scale": "large",
-    "theme": "cosimo"
+    "theme": "discord_dark"
 }
