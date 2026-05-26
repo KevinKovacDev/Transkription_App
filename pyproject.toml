@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "faster-whisper>=1.2.1",
-    "nvidia-cublas-cu12>=12.9.2.10",
-    "nvidia-cudnn-cu12>=9.22.0.52",
     "yt-dlp>=2026.3.17",
+]
+
+[project.optional-dependencies]
+cuda = [
+    "nvidia-cublas-cu12>=12.9.2.10; sys_platform != 'darwin'",
+    "nvidia-cudnn-cu12>=9.22.0.52; sys_platform != 'darwin'",
 ]

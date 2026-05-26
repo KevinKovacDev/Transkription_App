@@ -8,3 +8,12 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Log-Dateien
+logs/
+
+# Output-Dateien
+output_yt/
+
+# Nutzer-spezifische Konfiguration (enthält lokale Pfade)
+transcript_config.json

@@ -1,3 +1,4 @@
+import logging
 import queue
 import subprocess
 import sys
@@ -11,7 +12,7 @@ from tkinter import filedialog
 
 import config
 from checks import cuda_available, ffmpeg_available, ytdlp_available
-from logger import Logger
+from logger import Logger, get_file_log
 from transcriber import Transcriber
 
 Theme: dict = {}
@@ -160,6 +161,10 @@ class App(tk.Tk):
         self._ytdlp_ok = ytdlp_available()
         self._ffmpeg_ok = True
 
+        flog = get_file_log()
+        if flog:
+            flog.info(f"ffmpeg: verfügbar, CUDA: {self._use_cuda}, yt-dlp: {self._ytdlp_ok}")
+
         self._transcriber = Transcriber(logger=Logger(), use_cuda=self._use_cuda, model=self._cfg.get("model", "large-v3"))
         self._queue: queue.Queue = queue.Queue()
         self._cancel_event = threading.Event()
@@ -215,6 +220,15 @@ class App(tk.Tk):
     def _on_settings_save(self, model_changed: bool, theme_changed: bool = False) -> None:
         global Theme
         self._cfg = config.load()
+
+        flog = get_file_log()
+        if flog:
+            flog.info(
+                f"Einstellungen gespeichert — Modell: {self._cfg.get('model')}, "
+                f"Theme: {self._cfg.get('theme')}, Skalierung: {self._cfg.get('ui_scale')}, "
+                f"Modell neu geladen: {model_changed}"
+            )
+
         if theme_changed:
             Theme = config.load_theme(self._cfg.get("theme", "discord_dark"))
             self.configure(bg=Theme["bg"])
@@ -251,6 +265,9 @@ class App(tk.Tk):
             self._transcriber.init()
             self._queue.put(("ready", None))
         except Exception as e:
+            flog = get_file_log()
+            if flog:
+                flog.exception("Whisper konnte nicht geladen werden")
             self._queue.put(("error", str(e)))
 
     def _start_transcription(self) -> None:
@@ -258,6 +275,16 @@ class App(tk.Tk):
         pending = self._main_frame.pending_items()
         self._done_count = 0
         self._total_count = len(pending)
+
+        flog = get_file_log()
+        if flog:
+            flog.info(f"Transkription gestartet: {len(pending)} Element(e)")
+            for item in pending:
+                if item["section"] == "pc":
+                    flog.info(f"  [PC]  {item['path']}")
+                else:
+                    flog.info(f"  [YT]  {item.get('title') or item['url']}")
+
         self._update_title()
         self._main_frame.set_all_waiting()
         threading.Thread(target=self._run_all, args=(pending,), daemon=True).start()
@@ -274,6 +301,9 @@ class App(tk.Tk):
                 if self._cancel_event.is_set():
                     raise InterruptedError
                 self._queue.put(("progress", (s, i, pct)))
+
+            label = str(item["path"]) if section == "pc" else (item.get("title") or item["url"])
+            flog = get_file_log()
 
             try:
                 if section == "pc":
@@ -295,11 +325,17 @@ class App(tk.Tk):
                     output_path = folder / f"{safe}.txt"
 
                 output_path.write_text(Transcriber.to_text(result.segments), encoding="utf-8")
+                if flog:
+                    flog.info(f"Fertig: {label} → {output_path}")
                 self._queue.put(("video_done", (section, idx)))
             except InterruptedError:
+                if flog:
+                    flog.info(f"Abgebrochen: {label}")
                 self._queue.put(("video_reverted", (section, idx)))
                 break
             except Exception as e:
+                if flog:
+                    flog.exception(f"Fehler bei: {label}")
                 self._queue.put(("video_error", (section, idx, str(e))))
 
         self._queue.put(("all_done", None))
