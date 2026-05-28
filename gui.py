@@ -5,6 +5,7 @@ import sys
 import threading
 import tkinter as tk
 import tkinter.font as tkfont
+import tkinter.ttk as ttk
 import webbrowser
 from collections.abc import Callable
 from pathlib import Path
@@ -16,6 +17,28 @@ from logger import Logger, get_file_log
 from transcriber import Transcriber
 
 Theme: dict = {}
+
+
+def _setup_scrollbar_style() -> None:
+    style = ttk.Style()
+    style.theme_use("clam")
+    style.configure(
+        "Flat.Vertical.TScrollbar",
+        troughcolor=Theme["bg_secondary"],
+        background=Theme["text_muted"],
+        darkcolor=Theme["bg_secondary"],
+        lightcolor=Theme["bg_secondary"],
+        bordercolor=Theme["bg_secondary"],
+        arrowcolor=Theme["bg_secondary"],
+        arrowsize=12,
+        width=12,
+        relief="flat",
+    )
+    style.map(
+        "Flat.Vertical.TScrollbar",
+        background=[("active", Theme["text"]), ("!active", Theme["text_muted"])],
+        troughcolor=[("active", Theme["bg_secondary"]), ("!active", Theme["bg_secondary"])],
+    )
 
 _SCALES = {
     "small":  {"font": 10, "font_sm": 9,  "font_load": 13, "padx": 20, "pady": 16},
@@ -150,6 +173,7 @@ class App(tk.Tk):
         cfg_early = config.load()
         Theme = config.load_theme(cfg_early.get("theme", "discord_dark"))
         self.configure(bg=Theme["bg"])
+        _setup_scrollbar_style()
         self.geometry(_WINDOW_SIZES.get(cfg_early.get("ui_scale", "medium"), "880x480"))
 
         if not ffmpeg_available():
@@ -233,6 +257,7 @@ class App(tk.Tk):
             Theme = config.load_theme(self._cfg.get("theme", "discord_dark"))
             self.configure(bg=Theme["bg"])
             self._apply_titlebar_theme()
+            _setup_scrollbar_style()
         if model_changed:
             self._apply_with_model_reload()
         else:
@@ -502,7 +527,18 @@ class MainFrame(tk.Frame):
                                         highlightbackground=Theme["separator"],
                                         highlightthickness=1)
         self._list_container.pack(fill="both", expand=True, pady=(0, 8))
-        self._empty_placeholder = tk.Frame(self._list_container, bg=Theme["bg_secondary"], height=80)
+        _canvas = tk.Canvas(self._list_container, bg=Theme["bg_secondary"], highlightthickness=0, bd=0)
+        _sb = ttk.Scrollbar(self._list_container, orient="vertical", command=_canvas.yview, style="Flat.Vertical.TScrollbar")
+        _canvas.configure(yscrollcommand=_sb.set)
+        _sb.pack(side="right", fill="y")
+        _canvas.pack(side="left", fill="both", expand=True)
+        self._list_inner = tk.Frame(_canvas, bg=Theme["bg_secondary"])
+        _cw = _canvas.create_window((0, 0), window=self._list_inner, anchor="nw")
+        self._list_inner.bind("<Configure>", lambda e: _canvas.configure(scrollregion=_canvas.bbox("all")))
+        _canvas.bind("<Configure>", lambda e: _canvas.itemconfig(_cw, width=e.width))
+        _canvas.bind("<MouseWheel>", lambda e: _canvas.yview_scroll(-1 * (e.delta // 120), "units"))
+        self._list_inner.bind("<MouseWheel>", lambda e: _canvas.yview_scroll(-1 * (e.delta // 120), "units"))
+        self._empty_placeholder = tk.Frame(self._list_inner, bg=Theme["bg_secondary"], height=80)
         self._empty_placeholder.pack(fill="x", padx=12, pady=12)
 
         # Vertical separator
@@ -545,7 +581,18 @@ class MainFrame(tk.Frame):
                                            highlightbackground=Theme["separator"],
                                            highlightthickness=1)
         self._list_container_yt.pack(fill="both", expand=True, pady=(0, 8))
-        self._empty_placeholder_yt = tk.Frame(self._list_container_yt, bg=Theme["bg_secondary"], height=80)
+        _canvas_yt = tk.Canvas(self._list_container_yt, bg=Theme["bg_secondary"], highlightthickness=0, bd=0)
+        _sb_yt = ttk.Scrollbar(self._list_container_yt, orient="vertical", command=_canvas_yt.yview, style="Flat.Vertical.TScrollbar")
+        _canvas_yt.configure(yscrollcommand=_sb_yt.set)
+        _sb_yt.pack(side="right", fill="y")
+        _canvas_yt.pack(side="left", fill="both", expand=True)
+        self._list_inner_yt = tk.Frame(_canvas_yt, bg=Theme["bg_secondary"])
+        _cw_yt = _canvas_yt.create_window((0, 0), window=self._list_inner_yt, anchor="nw")
+        self._list_inner_yt.bind("<Configure>", lambda e: _canvas_yt.configure(scrollregion=_canvas_yt.bbox("all")))
+        _canvas_yt.bind("<Configure>", lambda e: _canvas_yt.itemconfig(_cw_yt, width=e.width))
+        _canvas_yt.bind("<MouseWheel>", lambda e: _canvas_yt.yview_scroll(-1 * (e.delta // 120), "units"))
+        self._list_inner_yt.bind("<MouseWheel>", lambda e: _canvas_yt.yview_scroll(-1 * (e.delta // 120), "units"))
+        self._empty_placeholder_yt = tk.Frame(self._list_inner_yt, bg=Theme["bg_secondary"], height=80)
         self._empty_placeholder_yt.pack(fill="x", padx=12, pady=12)
 
     # ── Queries ───────────────────────────────────────────────────────────────
@@ -617,7 +664,7 @@ class MainFrame(tk.Frame):
         if self._empty_placeholder.winfo_ismapped():
             self._empty_placeholder.pack_forget()
 
-        wrapper = tk.Frame(self._list_container, bg=Theme["bg_secondary"])
+        wrapper = tk.Frame(self._list_inner, bg=Theme["bg_secondary"])
         wrapper.pack(fill="x", padx=12, pady=(8, 3))
 
         info_row = tk.Frame(wrapper, bg=Theme["bg_secondary"])
@@ -724,7 +771,7 @@ class MainFrame(tk.Frame):
         if self._empty_placeholder_yt.winfo_ismapped():
             self._empty_placeholder_yt.pack_forget()
 
-        wrapper = tk.Frame(self._list_container_yt, bg=Theme["bg_secondary"])
+        wrapper = tk.Frame(self._list_inner_yt, bg=Theme["bg_secondary"])
         wrapper.pack(fill="x", padx=12, pady=(8, 3))
 
         info_row = tk.Frame(wrapper, bg=Theme["bg_secondary"])
