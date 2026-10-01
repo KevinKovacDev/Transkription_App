@@ -119,3 +119,25 @@ uv sync --extra cuda
 Terminal neu starten und die App wie gewohnt mit `uv run python main.py` starten.
 
 Kein weiterer Schritt nötig — die App erkennt beim Start automatisch ob CUDA verfügbar ist und nutzt es dann. Der Punkt unten links in der App zeigt grün wenn GPU-Beschleunigung aktiv ist, rot wenn die App auf der CPU läuft.
+
+---
+
+## Ordner-Transkription per CLI (transcriber_isolated.py)
+
+Statt der App kann auch `transcriber_isolated.py` direkt genutzt werden, um alle Videos aus `input_videos` nach `output_videos` zu transkribieren:
+
+```bash
+uv run python transcriber_isolated.py --folder input_videos --output output_videos
+```
+
+Das durchsucht `input_videos` rekursiv nach Videos und legt die Transkripte (mit Zeitstempeln) in `output_videos` mit gespiegelter Ordnerstruktur ab. Bereits transkribierte Videos werden übersprungen.
+
+Optionale Parameter:
+
+| Parameter | Bedeutung |
+|---|---|
+| `--model medium` | anderes Whisper-Modell statt `large-v3` (Standard) |
+| `--language en` | Sprache statt `de` (Standard) |
+| `--with-plain-text` | zusätzlich eine reine `.txt` ohne Zeitstempel erzeugen |
+| `--gpu` / `--cpu` | Gerät erzwingen (sonst Auto-Erkennung) |
+| `--no-skip` | bereits transkribierte Videos erneut verarbeiten |
