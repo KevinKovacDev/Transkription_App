@@ -141,3 +141,5 @@ Optionale Parameter:
 | `--with-plain-text` | zusätzlich eine reine `.txt` ohne Zeitstempel erzeugen |
 | `--gpu` / `--cpu` | Gerät erzwingen (sonst Auto-Erkennung) |
 | `--no-skip` | bereits transkribierte Videos erneut verarbeiten |
+
+Banana
